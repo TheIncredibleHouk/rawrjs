@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script type="text/javascript" src="scripts/rawr.js"></script>
+    <script type="text/javascript" src="scripts/rawrControls.js"></script>
+    <style type="text/css">
+        html, body {
+            padding: 0px;
+            margin: 0px;
+        }
+
+        .blue {
+            background-color: blue;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        dialog {
+            background-color: #ffffff;
+            display: block;
+        }
+
+        dropdownlist > section {
+            border: 1px solid black;
+            background-color: #ffffff;
+        }
+
+            dropdownlist > section > item {
+                display: block;
+            }
+
+        *:invalid {
+            background-color: red;
+        }
+        
+    </style>
+</head>
+<body id="page">
+    <form validation="blur">
+        <div  id="asTest" style="position: fixed;">
+            Absolute X <input id="x" type="text" /><br />
+            Absolute Y<input id="y" type="text" /><br />
+            Window X <input id="x2" type="text" /><br />
+            Window Y<input id="y2" type="text" />
+            <input type="submit" />
+        </div>
+        <div id="deltaX" style="background-color: red; height: 50px;">&nbsp;</div>
+        <div id="deltaY" style="background-color: blue; height: 50px;">&nbsp;</div>
+    </form>
+    <div style=" height: 2000px;"></div>
+</body>
+<script type="text/javascript">
+    rawr.wrap(document.body).onpointermove.add(function () {
+        rawr.get("x").text = rawr.client.pointer.documentX;
+        rawr.get("y").text = rawr.client.pointer.documentY;
+        rawr.get("x2").text = rawr.client.pointer.viewPortX;
+        rawr.get("y2").text = rawr.client.pointer.viewPortY;
+        rawr.get("deltaX").width = Math.abs(rawr.client.pointer.deltaX * 5) + 10;
+        rawr.get("deltaY").width = Math.abs(rawr.client.pointer.deltaY * 5) + 10;
+        rawr.get("asTest").text
+    });
+</script>
+</html>

@@ -1,0 +1,264 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Typing Game</title>
+    <style type="text/css">
+        @-webkit-keyframes slidein {
+            0% {
+                left: 100%;
+                opacity: 0;
+            }
+
+            100% {
+                left: 0%;
+                opacity: 1;
+            }
+        }
+
+
+        @keyframes slidein {
+            0% {
+                left: 100%;
+                opacity: 0;
+            }
+
+            100% {
+                left: 0%;
+                opacity: 1;
+            }
+        }
+
+        @-webkit-keyframes slideout {
+            0% {
+                left: 0%;
+                opacity: 1;
+            }
+
+            100% {
+                left: -100%;
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideout {
+            0% {
+                left: 0%;
+                opacity: 1;
+            }
+
+            100% {
+                left: -100%;
+                opacity: 0;
+            }
+        }
+
+        @-webkit-keyframes current {
+            0% {
+                width: 75px;
+                height: 75px;
+            }
+
+            100% {
+                width: 100px;
+                height: 100px;
+            }
+        }
+
+        @keyframes current {
+            0% {
+                width: 75px;
+                height: 75px;
+            }
+
+            100% {
+                width: 100px;
+                height: 100px;
+            }
+        }
+
+        .slidein {
+            -webkit-animation: slidein .5s normal forwards;
+            animation: slidein .5s normal forwards;
+        }
+
+        .slideout {
+            -webkit-animation: slideout 1s normal forwards;
+            animation: slideout 1s normal forwards;
+        }
+
+        #picturearea {
+            width: 400px;
+            height: 400px;
+            overflow: hidden;
+            border: 4px solid black;
+        }
+
+        #typingarea > span {
+            font-size: 40pt;
+            display: inline-block;
+            width: 75px;
+            height: 75px;
+            vertical-align: bottom;
+            border: 1px solid #000000;
+        }
+
+        .current {
+            -webkit-animation: current 1s normal forwards;
+            animation: current 1s normal forwards;
+        }
+
+        .ok {
+            color: white;
+            background-color: green;
+        }
+
+        picture {
+            background-size: 100% 100%;
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .miniPicture {
+        }
+
+
+        html, body {
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+    <script type="text/javascript" src="scripts/rawr.js"></script>
+    <script type="text/javascript">
+        var pictures = List.from(["cat",
+                       "snow",
+                       "sun",
+                       "dog",
+                       "car",
+                       "wheel",
+                       "milk",
+                       "clouds",
+                       "green",
+                       "daddy",
+                       "mommy",
+                       "shoe",
+                       "rain",
+                       "moon",
+                       "ant",
+                       "pants",
+                       "water",
+                       "shirt",
+                       "dress",
+                       "chicken",
+                       "pickle",
+                       "orange",
+                       "apple",
+                       "foot",
+                       "purple",
+                       "yellow",
+                       "blue",
+                       "eye",
+                       "banana",
+                       "hair",
+                       "hand",
+                       "carrot",
+                       "tree",
+                       "lion",
+                       "potato",
+                       "fish",
+                       "red",
+                       "bee",
+                       "cow",
+                       "key",
+                       "carlie"]);
+
+        function Picture() {
+            this.display = Element.create("picture");
+        };
+
+        Picture.prototype.setPicture = function (animal) {
+            this.display.setStyle("background-image", "url('resources/pictures/" + animal + ".jpg')");
+            this.display.hideEffect = "slideout";
+            this.display.showEffect = "slidein";
+        };
+
+        var game = {
+            currentPicture: "",
+            currentIndex: 0,
+            currentTypingPosition: 0,
+            picDisplay: new Picture(),
+            nextPicture: function () {
+                var i, l, typingArea = rawr.get("typingarea"), currentSpan, newLetters = new List();
+                game.currentPicture = pictures[game.currentIndex++].toUpperCase();
+                game.picDisplay.setPicture(game.currentPicture);
+                game.picDisplay.display.hidden = false;
+                l = game.currentPicture.length;
+                typingArea.clearChildren();
+                
+                for (i = 0; i < l; i++) {
+                    currentSpan = Element.create("span");
+                    currentSpan.rawText = game.currentPicture.charAt(i).toUpperCase();
+                    newLetters.add(currentSpan);
+                }
+
+                typingArea.addChildren(newLetters);
+
+                game.currentTypingPosition = 0;
+                game.setNextLetter();
+            },
+
+            checkLetter: function () {
+                var text = rawr.get("typingArea", Textbox).text.toUpperCase().charAt(0);
+                if (text == game.currentPicture.charAt(game.currentTypingPosition)) {
+                    rawr.get("typingarea").getChildAt(game.currentTypingPosition).classes.add("ok")
+                    game.currentTypingPosition++;
+                    if (game.currentTypingPosition == game.currentPicture.length) {
+                        Timer.execute(game.slideOut, new TimeSpan(1000))
+                    }
+                    else {
+                        if (game.currentIndex >= pictures.length) {
+                            pictures.randomize();
+                            game.currentIndex = 0;
+                        }
+                        game.setNextLetter();
+                    }
+                }
+
+                rawr.get("typingArea", Textbox).text = "";
+            },
+
+            slideOut: function () {
+                game.picDisplay.display.hidden = true;
+                Timer.execute(game.nextPicture, new TimeSpan(1000));
+            },
+
+            setNextLetter: function () {
+                rawr.get("typingarea").getChildAt(game.currentTypingPosition).classes.add("current");
+            },
+
+            initialize: function () {
+                rawr.get("picturearea").addChild(game.picDisplay.display);
+                pictures.randomize();
+                game.nextPicture();
+                pictures.forEach(function (item) {
+                    var o = Element.create("option");
+                    o.rawText = item;
+                    rawr.get("pick").addChild(o);
+                });
+            }
+        };
+
+        rawr.afterinitialize.add(game.initialize);
+    </script>
+</head>
+<body>
+    <select onchange="game.currentIndex = this.selectedIndex; game.nextPicture()" id="pick"></select>
+    <center>
+        <div id="picturearea" capture></div>
+        <div id="typingarea"></div>
+        <input style="position: fixed; top: -200px" type="text" onblur="typingArea.focus()" onkeyup="game.checkLetter()" autofocus id="typingArea" />
+    </center>
+</body>
+</html>

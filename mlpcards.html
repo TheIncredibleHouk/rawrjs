@@ -1,0 +1,262 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>My Little Pony Card Matching Game</title>
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            padding: 0px;
+            margin: 0px;
+        }
+
+        @-webkit-keyframes swipeDown {
+            0% {
+                top: -100%;
+            }
+
+            100% {
+                top: 0%;
+            }
+        }
+
+        @keyframes swipeDown {
+            0% {
+                top: -100%;
+            }
+
+            100% {
+                top: 0%;
+            }
+        }
+
+        @-webkit-keyframes swipeUp {
+            0% {
+                top: 0%;
+            }
+
+            100% {
+                top: -100%;
+            }
+        }
+
+        @keyframes swipeUp {
+           0% {
+                top: 0%;
+            }
+
+            100% {
+                top: -100%;
+            }
+        }
+
+        .swipeUp {
+            -webkit-animation: swipeUp forwards 1s;
+            animation: swipeUp forwards 1s;
+        }
+
+        .swipeDown {
+            -webkit-animation: swipeDown forwards 1s;
+            animation: swipeDown forwards 1s;
+        }
+
+        @-webkit-keyframes blinkOk {
+            0% {
+                border-color: black;
+            }
+
+            20% {
+                border-color: green;
+            }
+
+            40% {
+                border-color: black;
+            }
+
+            60% {
+                border-color: green;
+            }
+
+            80% {
+                border-color: black;
+            }
+            100% {
+                border-color: green;
+            }
+        }
+
+        @keyframes blinkOk {
+              0% {
+                border-color: black;
+            }
+
+            20% {
+                border-color: green;
+            }
+
+            40% {
+                border-color: black;
+            }
+
+            60% {
+                border-color: green;
+            }
+
+            80% {
+                border-color: black;
+            }
+            100% {
+                border-color: green;
+            }
+        }
+
+        .blinkOk {
+            -webkit-animation: blinkOk forwards 2s;
+            animation: blinkOk forwards 1s;
+        }
+
+        card {
+            background-size: 100% 100%;
+            display: inline-block;
+            width: 25%;
+            height: 25%;
+            margin: 0px;
+            padding: 0px;
+            clear: none;
+            float: left;
+            overflow: hidden;
+        }
+
+            card > section {
+                background-image: url('resources/mlp.png');
+                background-size: 100% 100%;
+                position: relative;
+                width: 100%;
+                height: 100%;
+            }
+
+            card.applejack {
+                background-image: url('resources/applejack.png');
+                border: 2px solid #000000;
+            }
+
+            card.celestia {
+                background-image: url('resources/celestia.png');
+                border: 2px solid #000000;
+            }
+
+            card.fluttershy {
+                background-image: url('resources/fluttershy.png');
+                border: 2px solid #000000;
+            }
+
+            card.luna {
+                background-image: url('resources/luna.png');
+                border: 2px solid #000000;
+            }
+
+            card.pinkiepie {
+                background-image: url('resources/pinkiepie.png');
+                border: 2px solid #000000;
+            }
+
+            card.rainbowdash {
+                background-image: url('resources/rainbowdash.png');
+                border: 2px solid #000000;
+            }
+
+            card.rarity {
+                background-image: url('resources/rarity.png');
+                border: 2px solid #000000;
+            }
+
+            card.twilight {
+                background-image: url('resources/twilight.png');
+                border: 2px solid #000000;
+            }
+
+        #gameArea {
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+    <script type="text/javascript" src="scripts/rawr.js"></script>
+    <script type="text/javascript">
+
+        var ponies = new List().addRange(["applejack", "celestia", "fluttershy", "luna", "pinkiepie", "rainbowdash", "rarity", "twilight"]);
+        function Card(pony) {
+            this.pony = pony;
+            this.display = Element.create("card");
+            this.cover = Element.create("section");
+            this.display.addChild(this.cover);
+            this.cover.hideEffect = "swipeDown";
+            this.cover.showEffect = "swipeUp";
+            this.cover.hidden = true;
+            this.display.classes.add(pony);
+        }
+
+        var game = {
+            cards: new List(),
+
+            initialize: function () {
+                for (var i = 0; i < 8; i++) {
+                    game.cards.add(new Card(ponies[i]));
+                    game.cards.add(new Card(ponies[i]));
+                }
+            },
+            resetGame: function () {
+                rawr.get("gameArea").clearChildren();
+                game.cards.randomize();
+                rawr.get("gameArea").addChildren(game.cards.as(Card).display);
+                game.cards.forEach(function (card) {
+                    card.cover.ontap.add(new Delegate(game.selectCard, null, [card]));
+                });
+            },
+            card1: null,
+            card2: null,
+            selectCard: function (card) {
+                if (game.card1 == null) {
+                    game.card1 = card;
+                    card.cover.hidden = false;
+                }
+                else if (game.card2 == null) {
+                    game.card2 = card;
+                    card.cover.hidden = false;
+                    if (game.card1.pony != game.card2.pony) {
+                        Timer.execute(game.resetSelected, new TimeSpan(1000));
+                    }
+                    else {
+                        Timer.execute(game.matchSelected, new TimeSpan(800));
+                    }
+                }
+            },
+
+            matchSelected: function () {
+                game.card1.display.classes.add("blinkOk");
+                game.card2.display.classes.add("blinkOk");
+                game.card1 = game.card2 = null;
+            },
+
+            resetSelected: function () {
+                game.card1.cover.hidden = game.card2.cover.hidden = true;
+                game.card1 = game.card2 = null;
+            }
+        };
+
+        rawr.afterinitialize.add(game.initialize);
+    </script>
+</head>
+<body classes="compressed">
+    <center>
+        <br />
+        <br />
+        <div id="gameArea">
+            <button onclick="game.resetGame()">Start game!</button>
+        </div>
+    </center>
+</body>
+</html>
